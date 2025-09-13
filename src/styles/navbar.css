@@ -1,0 +1,10 @@
+.navbar{
+  height:64px; display:flex; align-items:center; justify-content:space-between; padding:0 18px; background:#fff; border-bottom:1px solid #eee;
+}
+.brand{ font-weight:700; margin-right:16px; }
+.nav-links{ display:flex; gap:12px; align-items:center; }
+.nav-link{ color:#666; padding:8px 10px; border-radius:6px; text-decoration:none; }
+.nav-link.active{ color:white; background:var(--primary); }
+.nav-right{ display:flex; gap:10px; align-items:center; }
+.btn-connect{ background:var(--primary); color:white; padding:8px 12px; border-radius:8px; border:none; }
+.account-badge{ padding:6px 10px; border-radius:8px; background:#f3f6ff; border:1px solid #e8edff; }

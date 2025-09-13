@@ -1,0 +1,9 @@
+:root {
+  --primary: #2b6ef6;
+  --bg: #f6f8fb;
+  --text: #222;
+}
+
+* { box-sizing: border-box; }
+html,body,#root { height:100%; margin:0; padding:0; background:var(--bg); color:var(--text); font-family:Arial, Helvetica, sans-serif; }
+button { cursor:pointer; }
