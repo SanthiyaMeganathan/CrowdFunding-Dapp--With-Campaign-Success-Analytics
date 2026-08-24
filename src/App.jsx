@@ -13,7 +13,7 @@ export default function App() {
   return (
     <>
       <Navbar />
-      <main style={{ padding: 20 }}>
+      <main>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/campaigns" element={<CampaignsPage />} />

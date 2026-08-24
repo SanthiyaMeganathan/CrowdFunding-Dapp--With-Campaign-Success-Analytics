@@ -1,0 +1,6 @@
+.campaign-form-shell { max-width: 720px !important; margin: 0 auto !important; padding: 28px !important; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); }
+.campaign-form { display: flex; flex-direction: column; gap: 16px; }
+.campaign-form label { display: flex; flex-direction: column; gap: 7px; color: var(--ink); font-size: .84rem; font-weight: 800; }
+.campaign-form textarea { min-height: 96px; resize: vertical; }
+.campaign-form input[type="checkbox"] { align-self: flex-start; width: 18px; height: 18px; accent-color: var(--primary); }
+.campaign-form button { border: 0; padding: 13px 16px; border-radius: 8px; background: var(--ink); color: #fff; font-weight: 800; }

@@ -10,7 +10,7 @@ export default function CreateCampaign() {
   if (!account) {
     return (
       <div style={{ padding: "2rem", textAlign: "center" }}>
-        <h2>Please connect your MetaMask wallet to create a campaign.</h2>
+        <h2>Please connect your OKX Wallet to create a campaign.</h2>
         <button
           onClick={connectWallet}
           style={{

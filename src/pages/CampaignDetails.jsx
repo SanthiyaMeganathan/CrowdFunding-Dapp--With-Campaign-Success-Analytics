@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { ethers } from "ethers";
 import CampaignCard from "../components/CampaignCard";
+import DonateModal from "../components/DonateModal";
 import { useContract } from "../hooks/useContract";
 import { useWallet } from "../context/WalletContext";
 
@@ -10,7 +11,7 @@ export default function CampaignDetails() {
   const { id } = useParams();
   const { getCampaign, getDonors, getDonationOf, getCampaignAnalytics, donate, contract } =
     useContract();
-  const { account } = useWallet();
+  const { account, provider } = useWallet();
 
   const [campaign, setCampaign] = useState(null);
   const [analytics, setAnalytics] = useState(null);
@@ -18,6 +19,7 @@ export default function CampaignDetails() {
   const [error, setError] = useState("");
   const [donors, setDonors] = useState([]);
   const [donationAmount, setDonationAmount] = useState("");
+  const [donateModalOpen, setDonateModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchCampaign = async () => {
@@ -50,8 +52,6 @@ export default function CampaignDetails() {
         // ✅ Fetch donors
         const donorAddresses = await getDonors(campaignId);
         if (donorAddresses && donorAddresses.length > 0) {
-          const provider = new ethers.BrowserProvider(window.ethereum);
-
           const donorData = await Promise.all(
             donorAddresses.map(async (addr) => {
               let ensName = null;
@@ -83,7 +83,7 @@ export default function CampaignDetails() {
     };
 
     fetchCampaign();
-  }, [id, getCampaign, getDonors, getDonationOf, getCampaignAnalytics, contract]);
+  }, [id, getCampaign, getDonors, getDonationOf, getCampaignAnalytics, contract, provider]);
 
   const handleDonate = async () => {
     if (!donationAmount || isNaN(donationAmount)) {
@@ -131,7 +131,21 @@ export default function CampaignDetails() {
   return (
     <div style={{ maxWidth: 980 }}>
       <h2>Campaign Details</h2>
-      <CampaignCard campaign={campaign} />
+      <CampaignCard
+        campaign={campaign}
+        onDonateClick={() => setDonateModalOpen(true)}
+      />
+
+      {donateModalOpen && (
+        <DonateModal
+          campaign={campaign}
+          onClose={() => setDonateModalOpen(false)}
+          onSuccess={() => {
+            setDonateModalOpen(false);
+            window.location.reload();
+          }}
+        />
+      )}
 
       <section style={{ marginTop: 20 }}>
         <h3>Contributions</h3>

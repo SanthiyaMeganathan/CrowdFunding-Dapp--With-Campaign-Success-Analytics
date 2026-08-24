@@ -4,9 +4,11 @@ import { Link } from "react-router-dom";
 import { ethers } from "ethers";
 import { useContract } from "../hooks/useContract";
 import CampaignCard from "../components/CampaignCard";
+import { useWallet } from "../context/WalletContext";
 
 export default function MyDonations() {
   const { contract, getCampaign, getDonationOf } = useContract();
+  const { account } = useWallet();
   const [donations, setDonations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -17,14 +19,12 @@ export default function MyDonations() {
         setLoading(true);
         setError("");
 
-        if (!window.ethereum) {
-          setError("MetaMask not detected.");
+        if (!contract || !account) {
+          setError("Please connect OKX Wallet first.");
           return;
         }
 
-        const provider = new ethers.BrowserProvider(window.ethereum);
-        const signer = await provider.getSigner();
-        const userAddress = await signer.getAddress();
+        const userAddress = account;
 
         const totalCampaigns = await contract.campaignCount();
         const myDonations = [];
@@ -43,7 +43,7 @@ export default function MyDonations() {
                 userAddress,
               });
             }
-          } catch (err) {
+          } catch {
             // skip invalid campaign IDs
             continue;
           }
@@ -59,7 +59,7 @@ export default function MyDonations() {
     };
 
     fetchMyDonations();
-  }, [contract, getCampaign, getDonationOf]);
+  }, [account, contract, getCampaign, getDonationOf]);
 
   const handleHowToGet = async (d) => {
     try {

@@ -1,0 +1,16 @@
+.campaign-card { position: relative; margin: 0 0 16px; padding: 22px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 8px 24px rgba(20,55,62,.05); overflow: hidden; }
+.campaign-card::after { content: ""; position: absolute; top: 0; right: 0; width: 86px; height: 4px; background: var(--primary); }
+.campaign-card.closed::after { background: var(--failure); }
+.card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.card-header h3 { font-size: 1.25rem; margin-bottom: 8px; }
+.card-desc { color: var(--muted); line-height: 1.55; max-width: 720px; }
+.badge-closed { color: #a7443b; background: #fff0ee; border: 1px solid #f5c5bf; padding: 5px 9px; border-radius: 999px; font: 700 .7rem monospace; text-transform: uppercase; }
+.card-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 18px 0; }
+.card-stats > div { padding: 11px 12px; background: #f4f9f7; border-radius: 8px; color: var(--muted); font-size: .78rem; }
+.card-stats strong { display: block; margin-bottom: 4px; color: var(--ink); font: 700 .68rem monospace; text-transform: uppercase; }
+.remaining-msg { color: var(--primary-dark); font-size: .83rem; }
+.card-actions { display: flex; gap: 8px; }
+.card-actions button, .campaign-card button { border: 0; border-radius: 7px; padding: 10px 14px; background: var(--ink); color: #fff; font-weight: 800; }
+.card-actions button:hover { background: var(--primary-dark); }
+.card-actions a:last-child button { color: var(--ink); background: #e7f3ef; }
+@media (max-width: 640px) { .card-stats { grid-template-columns: repeat(2, 1fr); } .campaign-card { padding: 17px; } }

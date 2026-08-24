@@ -2,14 +2,13 @@
 import React, { useState, useMemo } from "react";
 import { ethers } from "ethers";
 import { useContract } from "../hooks/useContract";
+import "../styles/modal.css";
 
 export default function DonateModal({ campaign, onClose, onSuccess }) {
   const { donate } = useContract();
   const [amount, setAmount] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
-  if (!campaign) return null;
 
   // ========== Compute Remaining ==========
   const remainingWei = useMemo(() => {
@@ -27,6 +26,8 @@ export default function DonateModal({ campaign, onClose, onSuccess }) {
       return "0";
     }
   }, [remainingWei]);
+
+  if (!campaign) return null;
 
   // ========== Handle Donation ==========
   const handleDonate = async () => {
@@ -65,7 +66,7 @@ export default function DonateModal({ campaign, onClose, onSuccess }) {
   };
 
   return (
-    <div
+    <div className="modal-backdrop"
       style={{
         position: "fixed",
         inset: 0,
@@ -76,7 +77,7 @@ export default function DonateModal({ campaign, onClose, onSuccess }) {
         zIndex: 1000,
       }}
     >
-      <div
+      <div className="donate-modal"
         style={{
           background: "white",
           padding: 20,
@@ -85,7 +86,8 @@ export default function DonateModal({ campaign, onClose, onSuccess }) {
           maxWidth: 420,
         }}
       >
-        <h3>Donate to {campaign.idea || campaign.title || `Campaign #${campaign.id}`}</h3>
+        <p className="page-kicker">// transaction preview</p>
+        <h3>Support {campaign.idea || campaign.title || `Campaign #${campaign.id}`}</h3>
         <p>
           Target: {ethers.formatEther(campaign.target || "0")} ETH
           <br />

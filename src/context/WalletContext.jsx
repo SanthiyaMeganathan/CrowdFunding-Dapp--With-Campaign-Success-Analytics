@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { ethers } from "ethers";
 import { SUPPORTED_CHAINS, DEFAULT_CHAIN } from "../utils/config";
+import { getOkxProvider } from "../utils/wallet";
 
 const WalletContext = createContext();
 
@@ -12,15 +13,15 @@ export const WalletProvider = ({ children }) => {
   const [chainId, setChainId] = useState(null);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (!window.ethereum) return;
+    const walletProvider = getOkxProvider();
+    if (!walletProvider) return;
 
-    const p = new ethers.BrowserProvider(window.ethereum);
+    const p = new ethers.BrowserProvider(walletProvider);
     setProvider(p);
 
     (async () => {
       try {
-        const accounts = await window.ethereum.request({ method: "eth_accounts" });
+        const accounts = await walletProvider.request({ method: "eth_accounts" });
         const net = await p.getNetwork();
 
         if (Number(net.chainId) !== DEFAULT_CHAIN) {
@@ -69,26 +70,37 @@ export const WalletProvider = ({ children }) => {
       }
     };
 
-    window.ethereum.on?.("accountsChanged", handleAccounts);
-    window.ethereum.on?.("chainChanged", handleChain);
+    walletProvider.on?.("accountsChanged", handleAccounts);
+    walletProvider.on?.("chainChanged", handleChain);
 
     return () => {
-      window.ethereum.removeListener?.("accountsChanged", handleAccounts);
-      window.ethereum.removeListener?.("chainChanged", handleChain);
+      walletProvider.removeListener?.("accountsChanged", handleAccounts);
+      walletProvider.removeListener?.("chainChanged", handleChain);
     };
   }, []);
 
   const connectWallet = async () => {
-    if (!window.ethereum) throw new Error("MetaMask not installed");
-    const p = provider || new ethers.BrowserProvider(window.ethereum);
+    const walletProvider = getOkxProvider();
+    if (!walletProvider) throw new Error("OKX Wallet not installed or not available");
+    const p = provider || new ethers.BrowserProvider(walletProvider);
 
+    // Clear the previous site authorization so OKX opens account selection.
+    try {
+      await walletProvider.request({
+        method: "wallet_revokePermissions",
+        params: [{ eth_accounts: {} }],
+      });
+    } catch (error) {
+      if (error.code !== -32601 && error.code !== -32602) throw error;
+    }
+
+    await p.send("eth_requestAccounts", []);
     const net = await p.getNetwork();
     if (Number(net.chainId) !== DEFAULT_CHAIN) {
       alert("You tried to connect to another network. Please switch to Sepolia Testnet.");
       return;
     }
 
-    await p.send("eth_requestAccounts", []);
     const s = await p.getSigner();
     const addr = await s.getAddress();
 
@@ -100,14 +112,71 @@ export const WalletProvider = ({ children }) => {
     return addr;
   };
 
-  const disconnect = () => {
+  const switchAccount = async () => {
+    const walletProvider = getOkxProvider();
+    if (!walletProvider) throw new Error("OKX Wallet not installed or not available");
+
+    try {
+      // Revoke this site's permission first so OKX must show its account picker.
+      await walletProvider.request({
+        method: "wallet_revokePermissions",
+        params: [{ eth_accounts: {} }],
+      });
+    } catch (error) {
+      if (error.code === 4001) throw error;
+      if (error.code !== -32601 && error.code !== -32602) throw error;
+    }
+
+    try {
+      await walletProvider.request({
+        method: "wallet_requestPermissions",
+        params: [{ eth_accounts: {} }],
+      });
+    } catch (error) {
+      if (error.code === 4001) throw error;
+      if (error.code !== -32601 && error.code !== -32602) throw error;
+    }
+
+    const accounts = await walletProvider.request({ method: "eth_requestAccounts" });
+    const selectedAccount = accounts?.[0];
+    if (!selectedAccount) throw new Error("No OKX Wallet account was selected");
+
+    const p = provider || new ethers.BrowserProvider(walletProvider);
+    const net = await p.getNetwork();
+    if (Number(net.chainId) !== DEFAULT_CHAIN) {
+      alert("You tried to connect to another network. Please switch to Sepolia Testnet.");
+      return;
+    }
+
+    const s = await p.getSigner();
+    setProvider(p);
+    setSigner(s);
+    setAccount(selectedAccount);
+    setChainId(net.chainId);
+    return selectedAccount;
+  };
+
+  const disconnect = async () => {
+    const walletProvider = getOkxProvider();
+    if (walletProvider) {
+      try {
+        await walletProvider.request({
+          method: "wallet_revokePermissions",
+          params: [{ eth_accounts: {} }],
+        });
+      } catch (error) {
+        if (error.code !== -32601 && error.code !== -32602 && error.code !== 4001) {
+          console.debug("OKX disconnect:", error);
+        }
+      }
+    }
     setSigner(null);
     setAccount(null);
   };
 
   return (
     <WalletContext.Provider
-      value={{ provider, signer, account, chainId, connectWallet, disconnect }}
+      value={{ provider, signer, account, chainId, connectWallet, switchAccount, disconnect }}
     >
       {children}
     </WalletContext.Provider>

@@ -5,7 +5,7 @@ import { useWallet } from "../context/WalletContext";
 import "../styles/navbar.css";
 
 export default function Navbar() {
-  const { account, chainId, connectWallet, disconnect } = useWallet();
+  const { account, chainId, connectWallet, switchAccount, disconnect } = useWallet();
   const [loading, setLoading] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [accountName, setAccountName] = useState("Unnamed");
@@ -50,7 +50,9 @@ export default function Navbar() {
       await connectWallet();
     } catch (e) {
       if (e.code === "ACTION_REJECTED" || e.code === 4001) {
-        alert("You rejected the connection request in MetaMask.");
+        alert("You rejected the connection request in OKX Wallet.");
+      } else if (e.message?.includes("OKX Wallet")) {
+        alert("Please install or unlock OKX Wallet, then try again.");
       } else {
         alert("Something went wrong while connecting. Please try again.");
       }
@@ -73,16 +75,12 @@ export default function Navbar() {
         alert("Notification: Connect to Sepolia ETH network only!!!");
         return;
       }
-      await window.ethereum.request({
-        method: "wallet_requestPermissions",
-        params: [{ eth_accounts: {} }],
-      });
-      await connectWallet();
+      await switchAccount();
     } catch (e) {
       if (e.code === 4001) {
-        alert("You rejected the account change request in MetaMask.");
+        alert("You rejected the account change request in OKX Wallet.");
       } else if (e.code === -32002) {
-        alert("A MetaMask request is already pending. Please open MetaMask and complete it first.");
+        alert("An OKX Wallet request is already pending. Open OKX Wallet and complete it first.");
       } else {
         alert("Something went wrong while changing account. Please try again.");
       }
@@ -91,10 +89,18 @@ export default function Navbar() {
     }
   };
 
-  const handleDisconnect = () => {
-    disconnect();
-    alert("You are not connected to any account.");
-    setDropdownOpen(false);
+  const handleDisconnect = async () => {
+    if (loading) return;
+    setLoading(true);
+    try {
+      await disconnect();
+      setDropdownOpen(false);
+      alert("OKX Wallet disconnected. Connect again to choose an account.");
+    } catch {
+      alert("Could not disconnect from OKX Wallet. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleCopy = async () => {
@@ -191,7 +197,7 @@ export default function Navbar() {
                   {copied && <span style={{ marginLeft: "8px", color: "green" }}>✔ Copied!</span>}
                 </p>
                 <button className="btn-connect" onClick={handleChangeAccount} disabled={loading}>
-                  Change Account
+                  Switch Account in OKX
                 </button>
                 <button className="btn-disconnect" onClick={handleDisconnect} disabled={loading}>
                   Disconnect

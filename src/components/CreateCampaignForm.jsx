@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { useContract } from "../hooks/useContract";
 import { ethers } from "ethers";
+import "../styles/form.css";
 
 const CreateCampaignForm = () => {
   const { createCampaign } = useContract();
@@ -80,11 +81,12 @@ const CreateCampaignForm = () => {
   };
 
   return (
-    <div style={{ maxWidth: "600px", margin: "0 auto" }}>
-      <h2>Create a New Campaign</h2>
+    <div className="campaign-form-shell">
+      <p className="page-kicker">// publish to sepolia</p>
+      <h2>Define your campaign.</h2>
       <form
         onSubmit={handleSubmit}
-        style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
+        className="campaign-form"
       >
         <label>
           Core Idea / Description:
@@ -167,8 +169,8 @@ const CreateCampaignForm = () => {
           </label>
         )}
 
-        {error && <p style={{ color: "red" }}>{error}</p>}
-        {successMsg && <p style={{ color: "green" }}>{successMsg}</p>}
+        {error && <p className="state-failure">{error}</p>}
+        {successMsg && <p className="state-success">{successMsg}</p>}
 
         <button type="submit" disabled={loading}>
           {loading ? "Creating..." : "Create Campaign"}

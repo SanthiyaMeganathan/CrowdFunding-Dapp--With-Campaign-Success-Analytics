@@ -6,16 +6,11 @@ import { useWallet } from "../context/WalletContext";
 import { useCallback, useMemo } from "react";
 
 export function useContract() {
-  const { signer } = useWallet();
+  const { provider, signer } = useWallet();
 
   // ========== Provider & Contracts ==========
-  const provider = useMemo(
-    () => new ethers.BrowserProvider(window.ethereum || null),
-    []
-  );
-
   const readOnlyContract = useMemo(
-    () => new ethers.Contract(CONTRACT_ADDRESS, contractAbi, provider),
+    () => (provider ? new ethers.Contract(CONTRACT_ADDRESS, contractAbi, provider) : null),
     [provider]
   );
 
@@ -57,6 +52,7 @@ export function useContract() {
   const getCampaign = useCallback(
     async (id) => {
       const campaignId = parseId(id);
+      if (!contract && !readOnlyContract) throw new Error("OKX Wallet not connected");
       const c = await (contract || readOnlyContract).getCampaign(campaignId);
       return mapCampaign(c);
     },
@@ -66,6 +62,7 @@ export function useContract() {
   const getAllCampaigns = useCallback(
     async () => {
       const active = contract || readOnlyContract;
+      if (!active) throw new Error("OKX Wallet not connected");
       const count = await active.campaignCount();
       const campaigns = [];
       for (let i = 1; i <= Number(count); i++) {
@@ -104,6 +101,7 @@ export function useContract() {
   const getCampaignAnalytics = useCallback(
     async (id) => {
       const campaignId = parseId(id);
+      if (!contract && !readOnlyContract) throw new Error("OKX Wallet not connected");
       return await (contract || readOnlyContract).getCampaignAnalytics(campaignId);
     },
     [contract, readOnlyContract]
@@ -112,6 +110,7 @@ export function useContract() {
   const getDonationOf = useCallback(
     async (id, donor) => {
       const campaignId = parseId(id);
+      if (!contract && !readOnlyContract) throw new Error("OKX Wallet not connected");
       const res = await (contract || readOnlyContract).getDonationOf(campaignId, donor);
       return res.toString();
     },
@@ -121,6 +120,7 @@ export function useContract() {
   const getDonors = useCallback(
     async (id) => {
       const campaignId = parseId(id);
+      if (!contract && !readOnlyContract) throw new Error("OKX Wallet not connected");
       return await (contract || readOnlyContract).getDonors(campaignId);
     },
     [contract, readOnlyContract]
